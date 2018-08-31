@@ -14,7 +14,8 @@ class ConvBlock(torch.nn.Module):
                  normalization=None,
                  activation=torch.nn.LeakyReLU(0.2),
                  dropout_rate=0.0,
-                 is_weight_equalizer=True):
+                 is_weight_equalizer=False,
+                 stride=None):
         assert sampling in ['deconv', 'subpixel', 'upsampling',
                             'stride', 'max_pool', 'avg_pool',
                             'same']
@@ -37,17 +38,19 @@ class ConvBlock(torch.nn.Module):
                                    padding=padding,
                                    bias=use_bias)
         elif sampling == 'stride':
+            stride = 2 if stride is None else stride
             conv = torch.nn.Conv2d(in_ch,
                                    out_ch,
                                    kernel_size,
-                                   stride=2,
+                                   stride=stride,
                                    padding=padding,
                                    bias=use_bias)
         elif sampling == 'deconv':
+            stride = 2 if stride is None else stride
             conv = torch.nn.ConvTranspose2d(in_ch,
                                             out_ch,
                                             kernel_size,
-                                            stride=2,
+                                            stride=stride,
                                             padding=padding,
                                             bias=use_bias)
         elif sampling == 'subpixel':
@@ -84,9 +87,10 @@ class ConvBlock(torch.nn.Module):
 
         # pooling
         if sampling == 'max_pool':
-            self.net.add_module('pool', torch.nn.MaxPool2d(2, 2))
+            stride = 2 if stride is None else stride
+            self.net.add_module('pool', torch.nn.MaxPool2d(stride, stride))
         elif sampling == 'avg_pool':
-            self.net.add_module('pool', torch.nn.AvgPool2d(2, 2))
+            self.net.add_module('pool', torch.nn.AvgPool2d(stride, stride))
         else:
             pass
 
