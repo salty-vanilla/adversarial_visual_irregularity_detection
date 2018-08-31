@@ -1,0 +1,20 @@
+model_params:
+  nb_growing: 6
+  upsampling: 'subpixel'
+  input_dim: 512
+
+
+fit_params:
+  image_dir: '/home/nakatsuka/unstudy/dataset/imas/faces'
+  logdir: '../logs/debug'
+  nb_epoch: 100
+  batch_size:
+    - 32
+    - 32
+    - 32
+    - 16
+    - 10
+    - 10
+  lr_g: 0.0001
+  lr_d: 0.0001
+  save_steps: 100
