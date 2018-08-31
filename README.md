@@ -1,6 +1,6 @@
-# Pytorch Implementation of PGGAN
+# Pytorch Implementation of AVID
 
-Progressive Growing of GANs for Improved Quality, Stability, and Variation [[paper]](http://research.nvidia.com/sites/default/files/pubs/2017-10_Progressive-Growing-of/karras2018iclr-paper.pdf)
+AVID: Adversarial Visual Irregularity Detection [[paper]](https://arxiv.org/abs/1805.09521)
 
 ## Environments
 * python 3.6
@@ -8,13 +8,3 @@ Progressive Growing of GANs for Improved Quality, Stability, and Variation [[pap
 
 ## Results
 
-<img src='assets/result_4-4.gif' width=200>
-<img src='assets/result_8-8.gif' width=200>
-<img src='assets/result_16-16.gif' width=200>
-<img src='assets/result_32-32.gif' width=200>
-<img src='assets/result_64-64.gif' width=200>
-<img src='assets/result_128-128.gif' width=200>
-
-## TBR
-* poor diversity
-* using too many RAM 
