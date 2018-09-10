@@ -1,20 +1,25 @@
-model_params:
-  nb_growing: 6
-  upsampling: 'subpixel'
-  input_dim: 512
+discriminator_params:
+  in_ch: 1
+  
+unet_params:
+  in_ch: 1
 
+dataset_params:
+  target_size:
+  is_flip: False
+
+dataloader_params:
+  image_dir: "/home/nakatsuka/workspace/dataset/IR-MNIST/Train Samples"
+  batch_size: 16
+  shuffle: True
+  with_labels: False
 
 fit_params:
-  image_dir: '/home/nakatsuka/unstudy/dataset/imas/faces'
-  logdir: '../logs/debug'
-  nb_epoch: 100
-  batch_size:
-    - 32
-    - 32
-    - 32
-    - 16
-    - 10
-    - 10
-  lr_g: 0.0001
-  lr_d: 0.0001
-  save_steps: 100
+  nb_epoch: 20
+  lr_d: 0.0002
+  lr_g: 0.0002
+  logdir: "../logs/debug"
+  save_steps: 10
+  visualize_steps: 1
+
+use_gpu: True

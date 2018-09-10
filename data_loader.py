@@ -9,9 +9,12 @@ import numpy as np
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, target_size=None,
                  is_flip=False,
+                 channel=1,
                  *args, 
                  **kwargs):
         self.transform = []
+        if channel == 1:
+            self.transform.append(transforms.Grayscale())
         if target_size is not None:
             if not isinstance(target_size, int):
                 target_size = (target_size[1], target_size[0])

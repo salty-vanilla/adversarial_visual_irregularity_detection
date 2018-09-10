@@ -1,4 +1,5 @@
 import torch
+import torch.utils.data
 import os
 import time
 from PIL import Image
@@ -9,12 +10,12 @@ class Solver:
     def __init__(self, unet: torch.nn.Module,
                  discriminator: torch.nn.Module,
                  device='cuda'):
-        self.unet = unet
-        self.discriminator = discriminator
         self.device = device
+        self.unet = unet.to(device)
+        self.discriminator = discriminator.to(device)
         self.unet.apply(self.init_weights)
         self.discriminator.apply(self.init_weights)
-        self.z_sampler = torch.distributions.Normal(0., 0.1)
+        self.z_sampler = torch.distributions.Normal(0., 0.01)
 
     def fit(self, data_loader: torch.utils.data.DataLoader,
             nb_epoch: int = 100,
@@ -30,25 +31,26 @@ class Solver:
         opt_g = torch.optim.Adam(self.unet.parameters(), lr_g,
                                  betas=(0.5, 0.999))
 
-        criterion = SquaredBCE
-        criterion = criterion.to(self.device)
+        criterion = SquaredBCE()
+        # criterion = criterion.to(self.device)
 
         for epoch in range(1, nb_epoch + 1):
             print('\nEpoch %d / %d' % (epoch, nb_epoch))
             start = time.time()
             for iter_, x in enumerate(data_loader):
-                bs = x_real.shape[0]
+                bs = x.shape[0]
                 # update discriminator
                 opt_d.zero_grad()
                 x_real = x.to(self.device)
                 x_eta = x_real + self.z_sampler.sample(x.shape).to(self.device)
+                x_eta = torch.clamp(x_eta, -1., 1.)
                 x_fake = self.unet(x_eta)
 
                 d_x_real = self.discriminator(x_real)
-                t_real = torch.full((bs, ), 1,
+                t_real = torch.full((bs, 1, 1, 1), 1,
                                     device=self.device)
                 d_x_fake = self.discriminator(x_fake)
-                t_fake = torch.full((bs, ), 0,
+                t_fake = torch.full((bs, 1, 1, 1), 0,
                                     device=self.device)
                 loss_d = criterion(d_x_real, t_real) + criterion(d_x_fake, t_fake)
                 loss_d.backward()
@@ -63,8 +65,10 @@ class Solver:
                 loss_g.backward()
                 opt_g.step()
 
-                print('%.1f[s]  loss_d: %.3f  loss_g: %.3f' %
-                      (time.time() - start, loss_d.item(), loss_g.item()),
+                print('%d / %d' % (iter_, len(data_loader)),
+                      '%.1f[s]  ' % (time.time() - start),
+                      'loss_d: %.3f' % loss_d.item(),
+                      'loss_g: %.3f' % loss_g.item(),
                       end='\r')
 
             if epoch % save_steps == 0:
@@ -74,9 +78,9 @@ class Solver:
                            os.path.join(logdir, 'discriminator_%d.pth' % epoch))
 
             if epoch % visualize_steps == 0:
-                x_real = x
-                x_eta = x_eta.detach()
-                x_fake = x_fake.detach()
+                x_real = x.detach().numpy()
+                x_eta = x_eta.cpu().numpy()
+                x_fake = x_fake.detach().cpu().numpy()
                 dst_path = os.path.join(logdir,
                                         'epoch_%d.png' % epoch)
                 self.visualize(dst_path, x_real, x_eta, x_fake)
@@ -87,12 +91,12 @@ class Solver:
         x_eta = x_eta[:nb_samples].transpose(0, 2, 3, 1).reshape(nb_samples*h, w, c)
         x_fake = x_fake[:nb_samples].transpose(0, 2, 3, 1).reshape(nb_samples*h, w, c)
 
-        x = np.concatenate((x_eta, x_fake, x_real), axis=2)
+        x = np.concatenate((x_eta, x_fake, x_real), axis=1)
         if c == 1:
             x = np.squeeze(x, -1)
 
         x = (x + 1) / 2 * 255
-        x = x.numpy().astype('uint8')
+        x = x.astype('uint8')
         image = Image.fromarray(x)
         image.save(dst_path)
 
@@ -107,6 +111,9 @@ class Solver:
 
 
 class SquaredBCE(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
     def forward(self, y, t, eps=1e-8):
         log = lambda x: torch.log(torch.clamp(x, eps, 1.))
         return -(t*log(y**2) + (1-t)*log((1-y**2))).mean()

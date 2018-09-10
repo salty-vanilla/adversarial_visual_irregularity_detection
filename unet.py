@@ -58,9 +58,9 @@ class UpBlock(torch.nn.Module):
 
 
 class UNet(torch.nn.Module):
-    def __init__(self, channel=3):
+    def __init__(self, in_ch=3):
         super().__init__()
-        self.down1 = DownBlock(3, 64, 64)
+        self.down1 = DownBlock(in_ch, 64, 64)
         self.down2 = DownBlock(64, 128, 128)
         self.down3 = DownBlock(128, 256, 256, 256)
         self.down4 = DownBlock(256, 512, 512, 512)
@@ -71,7 +71,7 @@ class UNet(torch.nn.Module):
         self.up3 = UpBlock(256+512, 512, 128)
         self.up4 = UpBlock(128+256, 256, 64)
         self.up5 = UpBlock(64+128, 128, 32)
-        self.last_conv = ConvBlock(32+64, channel,
+        self.last_conv = ConvBlock(32+64, in_ch,
                                    activation=torch.nn.Tanh())
 
     def forward(self, x):
