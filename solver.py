@@ -4,6 +4,7 @@ import os
 import time
 from PIL import Image
 import numpy as np
+from utils.image import tile_results
 
 
 class Solver:
@@ -15,7 +16,7 @@ class Solver:
         self.discriminator = discriminator.to(device)
         self.unet.apply(self.init_weights)
         self.discriminator.apply(self.init_weights)
-        self.z_sampler = torch.distributions.Normal(0., 0.01)
+        self.z_sampler = torch.distributions.Normal(0., 0.5)
 
     def fit(self, data_loader: torch.utils.data.DataLoader,
             nb_epoch: int = 100,
@@ -78,27 +79,20 @@ class Solver:
                            os.path.join(logdir, 'discriminator_%d.pth' % epoch))
 
             if epoch % visualize_steps == 0:
-                x_real = x.detach().numpy()
+                diff = (x_real - x_fake) ** 2
+                d_x = self.discriminator(x_real)
+
+                diff = torch.mean(diff, dim=1)
+                d_x = torch.squeeze(d_x, dim=1)
+
+                x_real = x_real.detach().cpu().numpy()
                 x_eta = x_eta.cpu().numpy()
                 x_fake = x_fake.detach().cpu().numpy()
-                dst_path = os.path.join(logdir,
-                                        'epoch_%d.png' % epoch)
-                self.visualize(dst_path, x_real, x_eta, x_fake)
+                diff = diff.detach().cpu().numpy()
+                d_x = d_x.detach().cpu().numpy()
 
-    def visualize(self, dst_path, x_real, x_eta, x_fake, nb_samples=3):
-        _, c, h, w = x_real.shape
-        x_real = x_real[:nb_samples].transpose(0, 2, 3, 1).reshape(nb_samples*h, w, c)
-        x_eta = x_eta[:nb_samples].transpose(0, 2, 3, 1).reshape(nb_samples*h, w, c)
-        x_fake = x_fake[:nb_samples].transpose(0, 2, 3, 1).reshape(nb_samples*h, w, c)
-
-        x = np.concatenate((x_eta, x_fake, x_real), axis=1)
-        if c == 1:
-            x = np.squeeze(x, -1)
-
-        x = (x + 1) / 2 * 255
-        x = x.astype('uint8')
-        image = Image.fromarray(x)
-        image.save(dst_path)
+                tile_results(os.path.join(logdir, 'epoch_%d' % epoch),
+                             x_real, x_eta, x_fake, diff, d_x)
 
     def init_weights(self, m):
         is_init = isinstance(m, torch.nn.Conv2d) \
