@@ -18,8 +18,16 @@ fit_params:
   nb_epoch: 20
   lr_d: 0.0002
   lr_g: 0.0002
-  logdir: "../logs/debug"
+  logdir: "../logs/debug2"
   save_steps: 10
   visualize_steps: 1
 
 use_gpu: True
+
+test_dataloader_params:
+  image_dir: "/home/nakatsuka/workspace/dataset/IR-MNIST/Test Samples"
+  batch_size: 16
+  shuffle: True
+  with_labels: False
+
+test_epoch: 20

@@ -25,6 +25,8 @@ class Solver:
             logdir: str = 'logs',
             save_steps: int = 10,
             visualize_steps: int = 1):
+        self.discriminator.train()
+        self.unet.train()
 
         os.makedirs(logdir, exist_ok=True)
         opt_d = torch.optim.Adam(self.discriminator.parameters(), lr_d,

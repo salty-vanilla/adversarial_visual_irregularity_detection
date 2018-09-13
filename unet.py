@@ -29,31 +29,29 @@ class UpModule(torch.nn.Module):
 class DownBlock(torch.nn.Module):
     def __init__(self, *channels):
         super().__init__()
-        self.convs = [ConvBlock(channels[i],
-                                channels[i+1],
-                                normalization='batch')
-                      for i in range(len(channels)-2)]
+        self.convs = torch.nn.Sequential(*[ConvBlock(channels[i],
+                                                     channels[i+1],
+                                                     normalization='batch')
+                                           for i in range(len(channels)-2)])
         self.down = DownModule(channels[-2], channels[-1])
 
     def forward(self, x):
-        for conv in self.convs:
-            x = conv(x)
+        x = self.convs(x)
         return self.down(x)
 
 
 class UpBlock(torch.nn.Module):
     def __init__(self, *channels):
         super().__init__()
-        self.convs = [ConvBlock(channels[i],
-                                channels[i+1],
-                                normalization='batch')
-                      for i in range(len(channels)-2)]
+        self.convs = torch.nn.Sequential(*[ConvBlock(channels[i],
+                                                     channels[i+1],
+                                                     normalization='batch')
+                                           for i in range(len(channels)-2)])
         self.up = UpModule(channels[-2], channels[-1])
 
     def forward(self, x1, x2):
         x = x1
-        for conv in self.convs:
-            x = conv(x)
+        x = self.convs(x)
         return self.up(x, x2)
 
 

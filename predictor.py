@@ -19,15 +19,16 @@ class Predictor:
         self.discriminator.eval()
         self.unet.eval()
         for iter_, x in enumerate(data_loader):
-            x_real = x.to(self.device)
-            x_eta = x_real + self.z_sampler.sample(x.shape).to(self.device)
-            x_eta = torch.clamp(x_eta, -1., 1.)
-            x_fake = self.unet(x_eta)
-            diff = (x_real - x_fake) ** 2
-            d_x = self.discriminator(x_real)
+            with torch.no_grad():
+                x_real = x.to(self.device)
+                x_eta = x_real + self.z_sampler.sample(x.shape).to(self.device)
+                x_eta = torch.clamp(x_eta, -1., 1.)
+                x_fake = self.unet(x_eta)
+                diff = (x_real - x_fake) ** 2
+                d_x = self.discriminator(x_real)
 
-            diff = torch.mean(diff, dim=1)
-            d_x = torch.squeeze(d_x, dim=1)
+                diff = torch.mean(diff, dim=1)
+                d_x = torch.squeeze(d_x, dim=1)
 
             if iter_ < nb_visualize_batch:
                 x_real = x_real.detach().cpu().numpy()
