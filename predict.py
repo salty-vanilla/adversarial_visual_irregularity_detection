@@ -18,8 +18,8 @@ if config['use_gpu']:
 discriminator = Discriminator(**(config['discriminator_params']))
 unet = UNet(**(config['unet_params']))
 
-dl = Dataset(**(config['test_dataloader_params'])) \
-    .flow_from_directory(**(config['dataloader_params']))
+dl = Dataset(**(config['dataset_params'])) \
+    .flow_from_directory(**(config['test_dataloader_params']))
 
 unet_path = os.path.join(config['fit_params']['logdir'],
                          'unet_%d.pth' % config['test_epoch'])

@@ -27,7 +27,7 @@ use_gpu: True
 test_dataloader_params:
   image_dir: "/home/nakatsuka/workspace/dataset/IR-MNIST/Test Samples"
   batch_size: 16
-  shuffle: True
+  shuffle: False
   with_labels: False
 
 test_epoch: 20
