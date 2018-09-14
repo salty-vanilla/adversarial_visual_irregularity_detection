@@ -10,13 +10,14 @@ from utils.image import tile_results
 class Solver:
     def __init__(self, unet: torch.nn.Module,
                  discriminator: torch.nn.Module,
+                 sigma=1.,
                  device='cuda'):
         self.device = device
         self.unet = unet.to(device)
         self.discriminator = discriminator.to(device)
         self.unet.apply(self.init_weights)
         self.discriminator.apply(self.init_weights)
-        self.z_sampler = torch.distributions.Normal(0., 0.5)
+        self.z_sampler = torch.distributions.Normal(0., sigma)
 
     def fit(self, data_loader: torch.utils.data.DataLoader,
             nb_epoch: int = 100,
@@ -82,7 +83,7 @@ class Solver:
 
             if epoch % visualize_steps == 0:
                 diff = (x_real - x_fake) ** 2
-                d_x = self.discriminator(x_real)
+                d_x = d_x_fake
 
                 diff = torch.mean(diff, dim=1)
                 d_x = torch.squeeze(d_x, dim=1)

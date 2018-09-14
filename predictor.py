@@ -25,7 +25,7 @@ class Predictor:
                 x_eta = torch.clamp(x_eta, -1., 1.)
                 x_fake = self.unet(x_eta)
                 diff = (x_real - x_fake) ** 2
-                d_x = self.discriminator(x_real)
+                d_x = self.discriminator(x_fake)
 
                 diff = torch.mean(diff, dim=1)
                 d_x = torch.squeeze(d_x, dim=1)

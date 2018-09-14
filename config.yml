@@ -18,7 +18,7 @@ fit_params:
   nb_epoch: 20
   lr_d: 0.0002
   lr_g: 0.0002
-  logdir: "../logs/debug2"
+  logdir: "../logs/debug3"
   save_steps: 10
   visualize_steps: 1
 
