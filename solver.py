@@ -2,9 +2,8 @@ import torch
 import torch.utils.data
 import os
 import time
-from PIL import Image
-import numpy as np
 from utils.image import tile_results
+from losses import SquaredBCE
 
 
 class Solver:
@@ -105,12 +104,3 @@ class Solver:
             torch.nn.init.xavier_normal_(m.weight)
             if m.bias is not None:
                 m.bias.data.fill_(0.0)
-
-
-class SquaredBCE(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, y, t, eps=1e-8):
-        log = lambda x: torch.log(torch.clamp(x, eps, 1.))
-        return -(t*log(y**2) + (1-t)*log((1-y**2))).mean()

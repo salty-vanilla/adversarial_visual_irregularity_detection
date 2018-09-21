@@ -15,10 +15,10 @@ dataloader_params:
   with_labels: False
 
 fit_params:
-  nb_epoch: 20
+  nb_epoch: 50
   lr_d: 0.0002
   lr_g: 0.0002
-  logdir: "../logs/debug3"
+  logdir: "../logs/debug4"
   save_steps: 10
   visualize_steps: 1
 
